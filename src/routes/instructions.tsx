@@ -46,7 +46,7 @@ function Studio() {
   useEffect(() => { if (user) refresh(); else setSaved(null); }, [user, refresh]);
 
   const doSave = async () => {
-    if (!text.trim()) return toast.error("Add some instruction text first.");
+    if (!text.trim()) { toast.error("Add some instruction text first."); return; }
     setSaving(true);
     try {
       await saveInstruction(text.trim().split(/[.!?]/)[0]?.slice(0, 80) ?? "Untitled", text);
