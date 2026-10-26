@@ -16,6 +16,8 @@ import { Route as InstructionsRouteImport } from './routes/instructions'
 import { Route as LocationsRouteImport } from './routes/locations'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReliabilityRouteImport } from './routes/reliability'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as VisualCheckRouteImport } from './routes/visual-check'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +55,16 @@ const ReliabilityRoute = ReliabilityRouteImport.update({
   path: '/reliability',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VisualCheckRoute = VisualCheckRouteImport.update({
   id: '/visual-check',
   path: '/visual-check',
@@ -67,6 +79,8 @@ export interface FileRoutesByFullPath {
   '/locations': typeof LocationsRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +91,8 @@ export interface FileRoutesByTo {
   '/locations': typeof LocationsRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRoutesById {
@@ -88,6 +104,8 @@ export interface FileRoutesById {
   '/locations': typeof LocationsRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +118,8 @@ export interface FileRouteTypes {
     | '/locations'
     | '/privacy'
     | '/reliability'
+    | '/reset-password'
+    | '/sign-in'
     | '/visual-check'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +130,8 @@ export interface FileRouteTypes {
     | '/locations'
     | '/privacy'
     | '/reliability'
+    | '/reset-password'
+    | '/sign-in'
     | '/visual-check'
   id:
     | '__root__'
@@ -120,6 +142,8 @@ export interface FileRouteTypes {
     | '/locations'
     | '/privacy'
     | '/reliability'
+    | '/reset-password'
+    | '/sign-in'
     | '/visual-check'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +155,8 @@ export interface RootRouteChildren {
   LocationsRoute: typeof LocationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ReliabilityRoute: typeof ReliabilityRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignInRoute: typeof SignInRoute
   VisualCheckRoute: typeof VisualCheckRoute
 }
 
@@ -185,6 +211,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReliabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/visual-check': {
       id: '/visual-check'
       path: '/visual-check'
@@ -203,6 +243,8 @@ const rootRouteChildren: RootRouteChildren = {
   LocationsRoute: LocationsRoute,
   PrivacyRoute: PrivacyRoute,
   ReliabilityRoute: ReliabilityRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignInRoute: SignInRoute,
   VisualCheckRoute: VisualCheckRoute,
 }
 export const routeTree = rootRouteImport

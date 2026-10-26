@@ -15,7 +15,10 @@ export const Route = createFileRoute("/evidence")({
 const nodeStyle = (kind: string) => ({
   fontSize: 11,
   width: 220,
-  borderRadius: 6,
+  borderRadius: 4,
+  padding: 10,
+  fontFamily: "var(--font-sans)",
+  borderLeft: kind === "task" ? "3px solid var(--primary)" : kind === "val" ? "3px solid var(--warning)" : "1px solid var(--border)",
   border: "1px solid var(--border)",
   background: kind === "doc" ? "var(--sidebar)" : kind === "val" ? "var(--warning-soft)" : kind === "task" ? "var(--teal-soft)" : "var(--card)",
   color: kind === "doc" ? "var(--sidebar-foreground)" : "var(--foreground)",
@@ -45,16 +48,21 @@ function Evidence() {
 
   return (
     <>
-      <PageHeader eyebrow="Traceability" title="Evidence Graph" description="Source document → sentences → tasks → validation results." actions={<SyntheticBadge />} />
+      <PageHeader eyebrow="02 · Traceability" title="Evidence Graph" description="Source document → sentences → tasks → validation results." actions={<SyntheticBadge />} />
+      <div className="mb-4 flex flex-wrap gap-5 text-xs text-muted-foreground" aria-label="Legend">
+        {[["bg-ink","Source document"],["bg-card border","Sentence"],["bg-teal-soft border-l-2 border-primary","Task"],["bg-warning-soft border-l-2 border-warning","Validation"]].map(([c,l]) => (
+          <span key={l} className="inline-flex items-center gap-2"><span className={`h-3 w-5 rounded-sm ${c}`} />{l}</span>
+        ))}
+      </div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <label htmlFor="ex" className="eyebrow">Example</label>
         <select id="ex" value={exId} onChange={(e) => setExId(e.target.value)} className="rounded-md border border-input bg-card px-3 py-2 text-sm">
           {exampleInstructions.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
         </select>
       </div>
-      <div className="surface h-[600px] overflow-hidden">
+      <div className="h-[620px] overflow-hidden rounded-md border bg-card">
         <ReactFlow nodes={nodes} edges={edges} fitView proOptions={{ hideAttribution: true }}>
-          <Background />
+          <Background gap={24} color="var(--border)" />
           <Controls />
           <MiniMap pannable zoomable />
         </ReactFlow>

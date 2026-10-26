@@ -37,7 +37,7 @@ const sections = [
 function Privacy() {
   return (
     <>
-      <PageHeader eyebrow="Trust" title="Privacy & limitations" />
+      <PageHeader eyebrow="06 · Trust" title="Privacy & limitations" />
       <div className="max-w-3xl space-y-6">
         {sections.map((s) => (
           <section key={s.title} className="surface p-6">
