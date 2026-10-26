@@ -23,7 +23,7 @@ function Locations() {
   const [locs, setLocs] = useState<Loc[]>([]);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; address?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string | undefined; address?: string | undefined }>({});
 
   const add = (e: FormEvent) => {
     e.preventDefault();

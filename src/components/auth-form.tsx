@@ -10,7 +10,7 @@ export function AuthForm({ onSuccess, idPrefix = "auth" }: { onSuccess?: () => v
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string | undefined; password?: string | undefined; form?: string | undefined }>({});
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
