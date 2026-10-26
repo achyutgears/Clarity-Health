@@ -10,33 +10,128 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EvidenceRouteImport } from './routes/evidence'
+import { Route as InstructionsRouteImport } from './routes/instructions'
+import { Route as LocationsRouteImport } from './routes/locations'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ReliabilityRouteImport } from './routes/reliability'
+import { Route as VisualCheckRouteImport } from './routes/visual-check'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvidenceRoute = EvidenceRouteImport.update({
+  id: '/evidence',
+  path: '/evidence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstructionsRoute = InstructionsRouteImport.update({
+  id: '/instructions',
+  path: '/instructions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocationsRoute = LocationsRouteImport.update({
+  id: '/locations',
+  path: '/locations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReliabilityRoute = ReliabilityRouteImport.update({
+  id: '/reliability',
+  path: '/reliability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisualCheckRoute = VisualCheckRouteImport.update({
+  id: '/visual-check',
+  path: '/visual-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/evidence': typeof EvidenceRoute
+  '/instructions': typeof InstructionsRoute
+  '/locations': typeof LocationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reliability': typeof ReliabilityRoute
+  '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/evidence': typeof EvidenceRoute
+  '/instructions': typeof InstructionsRoute
+  '/locations': typeof LocationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reliability': typeof ReliabilityRoute
+  '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/evidence': typeof EvidenceRoute
+  '/instructions': typeof InstructionsRoute
+  '/locations': typeof LocationsRoute
+  '/privacy': typeof PrivacyRoute
+  '/reliability': typeof ReliabilityRoute
+  '/visual-check': typeof VisualCheckRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/evidence'
+    | '/instructions'
+    | '/locations'
+    | '/privacy'
+    | '/reliability'
+    | '/visual-check'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/evidence'
+    | '/instructions'
+    | '/locations'
+    | '/privacy'
+    | '/reliability'
+    | '/visual-check'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/evidence'
+    | '/instructions'
+    | '/locations'
+    | '/privacy'
+    | '/reliability'
+    | '/visual-check'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  EvidenceRoute: typeof EvidenceRoute
+  InstructionsRoute: typeof InstructionsRoute
+  LocationsRoute: typeof LocationsRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ReliabilityRoute: typeof ReliabilityRoute
+  VisualCheckRoute: typeof VisualCheckRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +143,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evidence': {
+      id: '/evidence'
+      path: '/evidence'
+      fullPath: '/evidence'
+      preLoaderRoute: typeof EvidenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instructions': {
+      id: '/instructions'
+      path: '/instructions'
+      fullPath: '/instructions'
+      preLoaderRoute: typeof InstructionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/locations': {
+      id: '/locations'
+      path: '/locations'
+      fullPath: '/locations'
+      preLoaderRoute: typeof LocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reliability': {
+      id: '/reliability'
+      path: '/reliability'
+      fullPath: '/reliability'
+      preLoaderRoute: typeof ReliabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visual-check': {
+      id: '/visual-check'
+      path: '/visual-check'
+      fullPath: '/visual-check'
+      preLoaderRoute: typeof VisualCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  EvidenceRoute: EvidenceRoute,
+  InstructionsRoute: InstructionsRoute,
+  LocationsRoute: LocationsRoute,
+  PrivacyRoute: PrivacyRoute,
+  ReliabilityRoute: ReliabilityRoute,
+  VisualCheckRoute: VisualCheckRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
