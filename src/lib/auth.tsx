@@ -36,7 +36,7 @@ interface AuthCtx {
   signOut: () => Promise<void>;
   /** Run `action` if signed in; otherwise open the sign-in dialog explaining `reason`. */
   requireAuth: (reason: string, action?: () => void) => void;
-  prompt: { reason: string; action?: () => void } | null;
+  prompt: { reason: string; action?: (() => void) | undefined } | null;
   closePrompt: () => void;
 }
 
