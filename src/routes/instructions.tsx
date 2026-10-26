@@ -15,7 +15,7 @@ export const Route = createFileRoute("/instructions")({
 });
 
 function Studio() {
-  const [text, setText] = useState(exampleInstructions[0].text);
+  const [text, setText] = useState(exampleInstructions[0]?.text ?? "");
   const [sentences, setSentences] = useState<SourceSentence[]>([]);
   const [tasks, setTasks] = useState<DraftTask[]>([]);
   const [selected, setSelected] = useState<string | null>(null);

@@ -67,9 +67,9 @@ export function computeMetrics(results: EvalResult[]) {
   const matrix = LABELS.map((e) => LABELS.map((p) => results.filter((r) => r.expected === e && r.predicted === p).length));
   const passed = results.filter((r) => r.pass).length;
   const perLabel = LABELS.map((l, i) => {
-    const tp = matrix[i][i];
-    const fp = LABELS.reduce((s, _, j) => s + (j !== i ? matrix[j][i] : 0), 0);
-    const fn = LABELS.reduce((s, _, j) => s + (j !== i ? matrix[i][j] : 0), 0);
+    const tp = matrix[i]?.[i] ?? 0;
+    const fp = LABELS.reduce((s, _, j) => s + (j !== i ? (matrix[j]?.[i] ?? 0) : 0), 0);
+    const fn = LABELS.reduce((s, _, j) => s + (j !== i ? (matrix[i]?.[j] ?? 0) : 0), 0);
     return {
       label: l,
       precision: tp + fp ? tp / (tp + fp) : null,

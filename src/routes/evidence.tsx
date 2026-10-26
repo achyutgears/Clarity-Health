@@ -22,7 +22,7 @@ const nodeStyle = (kind: string) => ({
 });
 
 function Evidence() {
-  const [exId, setExId] = useState(exampleInstructions[0].id);
+  const [exId, setExId] = useState(exampleInstructions[0]?.id ?? "");
   const { nodes, edges } = useMemo(() => {
     const ex = exampleInstructions.find((e) => e.id === exId)!;
     const sentences = splitSentences(ex.text);
