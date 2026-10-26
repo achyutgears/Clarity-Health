@@ -50,7 +50,7 @@ function VisualCheck() {
 
   return (
     <>
-      <PageHeader eyebrow="Verification" title="Visual Check" description="Images stay in your browser. Nothing is uploaded." />
+      <PageHeader eyebrow="03 · Verification" title="Visual Check" description="Images stay in your browser. Nothing is uploaded." />
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="surface p-5 lg:col-span-2">
           <div className="flex flex-wrap gap-2">

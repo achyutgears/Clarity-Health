@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlertTriangle, Check, Pencil, X, Play } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, Check, Pencil, X, Play, Bookmark, Loader2, Trash2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { deleteSaved, listSaved, saveInstruction, type SavedInstruction } from "@/lib/saved-instructions";
 import { toast } from "sonner";
 import { PageHeader, Notice, SyntheticBadge } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -33,16 +35,42 @@ function Studio() {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
 
   const selTask = tasks.find((t) => t.id === selected);
+  const { user, requireAuth } = useAuth();
+  const [saved, setSaved] = useState<SavedInstruction[] | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    try { setLoadErr(null); setSaved(await listSaved()); } catch (e) { setLoadErr((e as Error).message); }
+  }, []);
+  useEffect(() => { if (user) refresh(); else setSaved(null); }, [user, refresh]);
+
+  const doSave = async () => {
+    if (!text.trim()) return toast.error("Add some instruction text first.");
+    setSaving(true);
+    try {
+      await saveInstruction(text.trim().split(/[.!?]/)[0]?.slice(0, 80) ?? "Untitled", text);
+      toast.success("Saved to your account");
+      await refresh();
+    } catch (e) { toast.error(`Could not save: ${(e as Error).message}`); }
+    finally { setSaving(false); }
+  };
 
   return (
     <>
-      <PageHeader eyebrow="Authoring" title="Instruction Studio" description="Paste or pick an instruction, then review each drafted task against its source sentence." actions={<SyntheticBadge />} />
+      <PageHeader eyebrow="01 · Authoring" title="Instruction Studio" description="Paste or pick an instruction, then review each drafted task against its source sentence." actions={
+        <div className="flex items-center gap-3">
+          <SyntheticBadge />
+          <Button variant="outline" disabled={saving} onClick={() => requireAuth("Saving an instruction stores it in your personal account so you can return to it later.", doSave)}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bookmark className="h-4 w-4" />} Save to account
+          </Button>
+        </div>} />
       <Notice tone="warning">
         Analysis here uses a simple placeholder rule set (sentence splitting and keyword matching). The extraction engine is not connected yet. Output is not clinically validated.
       </Notice>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="surface flex flex-col p-5">
+        <section className="flex flex-col border-t-2 border-foreground pt-5" aria-label="Source">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1">
               <label htmlFor="example" className="eyebrow">Example</label>
@@ -65,10 +93,10 @@ function Studio() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={10}
-            className="mt-1 w-full flex-1 resize-y rounded-md border border-input bg-card p-3 text-sm leading-relaxed"
+            className="paper mt-1 w-full flex-1 resize-y rounded-sm border border-input p-4 font-mono text-[13px] leading-[1.75rem]"
           />
 
-          <h2 className="eyebrow mt-6">Source evidence</h2>
+          <h2 className="eyebrow mt-6">Source evidence · sentence offsets</h2>
           {sentences.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">Run analysis to see source sentences.</p>
           ) : (
@@ -76,7 +104,7 @@ function Studio() {
               {sentences.map((s) => {
                 const linked = selTask?.sentenceId === s.id;
                 return (
-                  <li key={s.id} className={cn("rounded-md border px-3 py-2 text-sm transition-colors", linked ? "border-primary bg-teal-soft" : "border-transparent")}>
+                  <li key={s.id} className={cn("border-l-2 px-3 py-2 font-mono text-[13px] transition-colors", linked ? "border-primary bg-teal-soft" : "border-border")}>
                     <span className="mr-2 font-mono text-xs text-muted-foreground">{s.id}</span>{s.text}
                   </li>
                 );
@@ -85,7 +113,8 @@ function Studio() {
           )}
         </section>
 
-        <section aria-label="Task cards" className="space-y-3">
+        <section aria-label="Extracted tasks" className="space-y-3">
+          <div className="eyebrow border-t-2 border-primary pt-5">Extracted tasks · {tasks.length}</div>
           {tasks.length === 0 && (
             <div className="surface p-8 text-center text-sm text-muted-foreground">No tasks yet. Choose an example and select Analyze.</div>
           )}
@@ -134,6 +163,36 @@ function Studio() {
           ))}
         </section>
       </div>
+
+      <section className="mt-16 rule-top" aria-label="Saved instructions">
+        <h2 className="font-display text-3xl">Your saved instructions</h2>
+        {!user ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Sign in to keep instructions in a personal workspace.{" "}
+            <button className="font-medium text-foreground underline underline-offset-4" onClick={() => requireAuth("Your saved instructions are private to your account.")}>Sign in</button>
+          </p>
+        ) : loadErr ? (
+          <p role="alert" className="mt-3 text-sm text-destructive">Could not load saved instructions: {loadErr}</p>
+        ) : saved === null ? (
+          <p className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</p>
+        ) : saved.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">Nothing saved yet. Use “Save to account” above.</p>
+        ) : (
+          <ul className="mt-4 divide-y border-y">
+            {saved.map((s) => (
+              <li key={s.id} className="flex items-center gap-4 py-3">
+                <button className="min-w-0 flex-1 text-left" onClick={() => { setText(s.content); setTasks([]); setSentences([]); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                  <div className="truncate text-sm font-medium">{s.title}</div>
+                  <div className="eyebrow mt-0.5">{new Date(s.created_at).toLocaleString()}</div>
+                </button>
+                <Button variant="ghost" size="icon" aria-label={`Delete ${s.title}`} onClick={async () => {
+                  try { await deleteSaved(s.id); await refresh(); toast.success("Deleted"); } catch (e) { toast.error((e as Error).message); }
+                }}><Trash2 className="h-4 w-4" /></Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </>
   );
 }

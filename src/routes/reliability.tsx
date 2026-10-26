@@ -30,7 +30,7 @@ function Reliability() {
   return (
     <>
       <PageHeader
-        eyebrow="Evaluation"
+        eyebrow="04 · Evaluation"
         title="Reliability Lab"
         description="Runs synthetic cases against the placeholder rule baseline. Metrics are computed live from each run."
         actions={
@@ -43,14 +43,14 @@ function Reliability() {
       />
       <Notice tone="warning">These results describe a keyword baseline on fabricated sentences. They are not evidence of clinical accuracy.</Notice>
 
-      <section aria-label="Metrics" className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+      <section aria-label="Metrics" className="mt-8 grid grid-cols-2 gap-8 md:grid-cols-4">
         {[
           ["Cases", m ? m.total : syntheticTestCases.length],
           ["Passed", m ? m.passed : "—"],
           ["Failed", m ? m.failed : "—"],
           ["Pass rate", m ? pct(m.total ? m.passed / m.total : null) : "—"],
         ].map(([l, v]) => (
-          <div key={l} className="surface p-5"><div className="eyebrow">{l}</div><div className="mt-2 font-display text-3xl">{v}</div></div>
+          <div key={l} className="rule-top"><div className="eyebrow">{l}</div><div className="display-num mt-3">{v}</div></div>
         ))}
       </section>
 
