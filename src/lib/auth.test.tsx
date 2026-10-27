@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   signInWithOAuth: vi.fn(),
   signInWithPassword: vi.fn(),
+  lovableSignInWithOAuth: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -18,6 +19,10 @@ vi.mock("@/integrations/supabase/client", () => ({
       signOut: vi.fn(),
     },
   },
+}));
+
+vi.mock("@/integrations/lovable", () => ({
+  lovable: { auth: { signInWithOAuth: mocks.lovableSignInWithOAuth } },
 }));
 
 const SUPABASE_URL = "https://example-ref.supabase.co";
@@ -43,6 +48,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
   mocks.signInWithOAuth.mockReset();
   mocks.signInWithPassword.mockReset();
+  mocks.lovableSignInWithOAuth.mockReset();
 });
 
 afterEach(() => {
