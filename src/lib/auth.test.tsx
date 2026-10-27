@@ -161,7 +161,7 @@ describe("AuthForm Google button", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/google sign-in isn't enabled for this project yet/i);
-    expect(mocks.signInWithOAuth).not.toHaveBeenCalled();
+    expect(mocks.lovableSignInWithOAuth).not.toHaveBeenCalled();
     expect(google).toBeEnabled();
   });
 
