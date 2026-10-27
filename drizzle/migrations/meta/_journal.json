@@ -15,6 +15,13 @@
       "when": 1793010000000,
       "tag": "0001_calendar_events",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793060889754,
+      "tag": "0002_apply_calendar_events",
+      "breakpoints": true
     }
   ]
 }
