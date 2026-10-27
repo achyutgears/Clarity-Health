@@ -10,19 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EvidenceRouteImport } from './routes/evidence'
 import { Route as InstructionsRouteImport } from './routes/instructions'
 import { Route as LocationsRouteImport } from './routes/locations'
+import { Route as MindfulRouteImport } from './routes/mindful'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReliabilityRouteImport } from './routes/reliability'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as VisualCheckRouteImport } from './routes/visual-check'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -43,6 +51,11 @@ const InstructionsRoute = InstructionsRouteImport.update({
 const LocationsRoute = LocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MindfulRoute = MindfulRouteImport.update({
+  id: '/mindful',
+  path: '/mindful',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -70,94 +83,120 @@ const VisualCheckRoute = VisualCheckRouteImport.update({
   path: '/visual-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/evidence': typeof EvidenceRoute
   '/instructions': typeof InstructionsRoute
   '/locations': typeof LocationsRoute
+  '/mindful': typeof MindfulRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/evidence': typeof EvidenceRoute
   '/instructions': typeof InstructionsRoute
   '/locations': typeof LocationsRoute
+  '/mindful': typeof MindfulRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/evidence': typeof EvidenceRoute
   '/instructions': typeof InstructionsRoute
   '/locations': typeof LocationsRoute
+  '/mindful': typeof MindfulRoute
   '/privacy': typeof PrivacyRoute
   '/reliability': typeof ReliabilityRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sign-in': typeof SignInRoute
   '/visual-check': typeof VisualCheckRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calendar'
     | '/dashboard'
     | '/evidence'
     | '/instructions'
     | '/locations'
+    | '/mindful'
     | '/privacy'
     | '/reliability'
     | '/reset-password'
     | '/sign-in'
     | '/visual-check'
+    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendar'
     | '/dashboard'
     | '/evidence'
     | '/instructions'
     | '/locations'
+    | '/mindful'
     | '/privacy'
     | '/reliability'
     | '/reset-password'
     | '/sign-in'
     | '/visual-check'
+    | '/auth/callback'
   id:
     | '__root__'
     | '/'
+    | '/calendar'
     | '/dashboard'
     | '/evidence'
     | '/instructions'
     | '/locations'
+    | '/mindful'
     | '/privacy'
     | '/reliability'
     | '/reset-password'
     | '/sign-in'
     | '/visual-check'
+    | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarRoute: typeof CalendarRoute
   DashboardRoute: typeof DashboardRoute
   EvidenceRoute: typeof EvidenceRoute
   InstructionsRoute: typeof InstructionsRoute
   LocationsRoute: typeof LocationsRoute
+  MindfulRoute: typeof MindfulRoute
   PrivacyRoute: typeof PrivacyRoute
   ReliabilityRoute: typeof ReliabilityRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignInRoute: typeof SignInRoute
   VisualCheckRoute: typeof VisualCheckRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -195,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/locations'
       fullPath: '/locations'
       preLoaderRoute: typeof LocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mindful': {
+      id: '/mindful'
+      path: '/mindful'
+      fullPath: '/mindful'
+      preLoaderRoute: typeof MindfulRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -232,20 +285,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VisualCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarRoute: CalendarRoute,
   DashboardRoute: DashboardRoute,
   EvidenceRoute: EvidenceRoute,
   InstructionsRoute: InstructionsRoute,
   LocationsRoute: LocationsRoute,
+  MindfulRoute: MindfulRoute,
   PrivacyRoute: PrivacyRoute,
   ReliabilityRoute: ReliabilityRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignInRoute: SignInRoute,
   VisualCheckRoute: VisualCheckRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

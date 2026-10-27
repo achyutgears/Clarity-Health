@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          kind: string
+          location: string | null
+          notes: string | null
+          reminder_minutes: number | null
+          starts_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind: string
+          location?: string | null
+          notes?: string | null
+          reminder_minutes?: number | null
+          starts_at: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          notes?: string | null
+          reminder_minutes?: number | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_instructions: {
         Row: {
           content: string

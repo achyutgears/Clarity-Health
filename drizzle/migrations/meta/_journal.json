@@ -8,6 +8,13 @@
       "when": 1793003860220,
       "tag": "0000_saved_instructions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793010000000,
+      "tag": "0001_calendar_events",
+      "breakpoints": true
     }
   ]
 }

@@ -2,9 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { Session, User } from "@supabase/supabase-js";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { authCallbackUrl, DEFAULT_NEXT_PATH } from "@/lib/auth-redirect";
 
 export const credentialsSchema = z.object({
-  email: z.string().trim().min(1, "Enter your email address.").email("Enter a valid email address.").max(255),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Enter your email address.")
+    .email("Enter a valid email address.")
+    .max(255),
   password: z.string().min(8, "Password must be at least 8 characters.").max(128),
 });
 
@@ -28,6 +34,77 @@ export async function sendPasswordReset(email: string) {
     redirectTo: window.location.origin + "/reset-password",
   });
   return error?.message ?? null;
+}
+
+export const GOOGLE_NOT_ENABLED_MESSAGE =
+  "Google sign-in isn't enabled for this project yet. Use email and password, or ask the project admin to enable the Google provider.";
+
+export interface AuthProviderStatus {
+  google: boolean;
+}
+
+let providerStatusPromise: Promise<AuthProviderStatus | null> | null = null;
+
+async function fetchAuthProviderStatus(): Promise<AuthProviderStatus | null> {
+  const url = import.meta.env["VITE_SUPABASE_URL"];
+  const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+  if (typeof url !== "string" || !url || typeof key !== "string" || !key) return null;
+  try {
+    const res = await fetch(`${url.replace(/\/+$/, "")}/auth/v1/settings`, {
+      headers: { apikey: key },
+    });
+    if (!res.ok) return null;
+    const body: unknown = await res.json();
+    if (typeof body !== "object" || body === null) return null;
+    const external = (body as { external?: unknown }).external;
+    if (typeof external !== "object" || external === null) return null;
+    return { google: (external as { google?: unknown }).google === true };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Which external sign-in providers the Supabase project has enabled, read from the public
+ * `/auth/v1/settings` endpoint. Cached per page load; `null` means the check itself failed
+ * (network, missing config) and the next call retries.
+ */
+export function getAuthProviderStatus(): Promise<AuthProviderStatus | null> {
+  if (!providerStatusPromise) {
+    providerStatusPromise = fetchAuthProviderStatus().then((status) => {
+      if (status === null) providerStatusPromise = null;
+      return status;
+    });
+  }
+  return providerStatusPromise;
+}
+
+/**
+ * Start Google OAuth. Returns an error message, or `null` once the browser is being sent to
+ * Google. Checks the provider is enabled first so nobody lands on a raw JSON error page.
+ */
+export async function signInWithGoogle(next: string = DEFAULT_NEXT_PATH): Promise<string | null> {
+  if (typeof window === "undefined") return "Google sign-in is only available in the browser.";
+  try {
+    const status = await getAuthProviderStatus();
+    if (status && !status.google) return GOOGLE_NOT_ENABLED_MESSAGE;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: authCallbackUrl(window.location.origin, next),
+        skipBrowserRedirect: true,
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) return error.message;
+    if (!data?.url) return "Couldn't start Google sign-in. Please try again.";
+    window.location.assign(data.url);
+    return null;
+  } catch (e) {
+    return e instanceof Error && e.message
+      ? e.message
+      : "Couldn't start Google sign-in. Please try again.";
+  }
 }
 
 interface AuthCtx {
@@ -73,7 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         ready,
-        signOut: async () => { await supabase.auth.signOut(); },
+        signOut: async () => {
+          await supabase.auth.signOut();
+        },
         requireAuth,
         prompt,
         closePrompt: () => setPrompt(null),

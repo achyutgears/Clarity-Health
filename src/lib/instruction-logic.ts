@@ -1,11 +1,16 @@
-// Placeholder rule-based logic. This is NOT the extraction engine and is not
-// clinically validated. It exists so the interface can be exercised end to end.
+/**
+ * Adapters and eval helpers used by the Reliability Lab.
+ * Document extraction for the studio lives in `./extraction` + `./review-session`.
+ */
+import { extractInstructions, segmentSentences } from "./extraction";
 import type { ExpectedLabel, TaskStatus } from "./synthetic-data";
 
 export interface SourceSentence {
   id: string;
   index: number;
   text: string;
+  start: number;
+  end: number;
 }
 
 export interface DraftTask {
@@ -15,16 +20,20 @@ export interface DraftTask {
   label: ExpectedLabel;
   warnings: string[];
   status: TaskStatus;
+  ruleId?: string;
 }
 
 export function splitSentences(text: string): SourceSentence[] {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((t, i) => ({ id: `s${i + 1}`, index: i + 1, text: t }));
+  return segmentSentences(text).map((s) => ({
+    id: s.id,
+    index: s.index,
+    text: s.text,
+    start: s.span.start,
+    end: s.span.end,
+  }));
 }
 
+/** Map engine task types onto the reliability-lab ExpectedLabel vocabulary. */
 export function classifySentence(text: string): ExpectedLabel {
   const t = text.toLowerCase();
   if (/\b(do not|don't|avoid|never)\b/.test(t)) return "prohibition";
@@ -34,24 +43,32 @@ export function classifySentence(text: string): ExpectedLabel {
 }
 
 export function detectWarnings(text: string): string[] {
-  const w: string[] = [];
-  const t = text.toLowerCase();
-  if (/\bas directed\b/.test(t)) w.push("Vague reference: “as directed” has no explicit dose or schedule.");
-  if (/\bunless\b|\bbut\b/.test(t)) w.push("Conditional clause: confirm the exception is captured.");
-  if (/\b(gently|small|mild)\b/.test(t)) w.push("Subjective qualifier may be interpreted differently.");
-  if (text.length > 140) w.push("Long sentence: may contain more than one task.");
-  return w;
+  const result = extractInstructions(text);
+  const fromEngine = result.candidates.flatMap((c) => c.warnings.map((w) => w.message));
+  const doc = result.warnings.map((w) => w.message);
+  return [...fromEngine, ...doc];
 }
 
-export function draftTasks(sentences: SourceSentence[]): DraftTask[] {
-  return sentences.map((s) => ({
-    id: `task-${s.id}`,
-    sentenceId: s.id,
-    title: s.text,
-    label: classifySentence(s.text),
-    warnings: detectWarnings(s.text),
-    status: "pending",
+/** Build draft tasks from the real extraction engine for a full source document. */
+export function draftTasksFromSource(source: string): DraftTask[] {
+  const result = extractInstructions(source);
+  return result.candidates.map((c) => ({
+    id: c.id,
+    sentenceId: c.sentenceId,
+    title: c.title,
+    label: classifySentence(c.evidence),
+    warnings: c.warnings.map((w) => w.message),
+    status: "pending" as const,
+    ruleId: c.ruleId,
   }));
+}
+
+/** @deprecated Prefer draftTasksFromSource(source) — kept for call sites that only have sentences. */
+export function draftTasks(sentences: SourceSentence[]): DraftTask[] {
+  const source = sentences.map((s) => s.text).join(" ");
+  if (!source.trim()) return [];
+  // Re-extract from joined text so rule IDs stay engine-backed (offsets will not match originals).
+  return draftTasksFromSource(source);
 }
 
 export const LABELS: ExpectedLabel[] = ["action", "prohibition", "warning", "timing"];
@@ -64,7 +81,9 @@ export interface EvalResult {
 }
 
 export function computeMetrics(results: EvalResult[]) {
-  const matrix = LABELS.map((e) => LABELS.map((p) => results.filter((r) => r.expected === e && r.predicted === p).length));
+  const matrix = LABELS.map((e) =>
+    LABELS.map((p) => results.filter((r) => r.expected === e && r.predicted === p).length),
+  );
   const passed = results.filter((r) => r.pass).length;
   const perLabel = LABELS.map((l, i) => {
     const tp = matrix[i]?.[i] ?? 0;
