@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   signInWithOAuth: vi.fn(),
   signInWithPassword: vi.fn(),
+  lovableSignInWithOAuth: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -18,6 +19,10 @@ vi.mock("@/integrations/supabase/client", () => ({
       signOut: vi.fn(),
     },
   },
+}));
+
+vi.mock("@/integrations/lovable", () => ({
+  lovable: { auth: { signInWithOAuth: mocks.lovableSignInWithOAuth } },
 }));
 
 const SUPABASE_URL = "https://example-ref.supabase.co";
@@ -43,6 +48,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
   mocks.signInWithOAuth.mockReset();
   mocks.signInWithPassword.mockReset();
+  mocks.lovableSignInWithOAuth.mockReset();
 });
 
 afterEach(() => {
@@ -94,54 +100,48 @@ describe("signInWithGoogle", () => {
     fetchMock.mockResolvedValue(settingsResponse({ email: true, google: false }));
     const { signInWithGoogle, GOOGLE_NOT_ENABLED_MESSAGE } = await loadAuth();
 
-    await expect(signInWithGoogle("/calendar")).resolves.toBe(GOOGLE_NOT_ENABLED_MESSAGE);
-    expect(mocks.signInWithOAuth).not.toHaveBeenCalled();
+    await expect(signInWithGoogle("/calendar")).resolves.toEqual({
+      error: GOOGLE_NOT_ENABLED_MESSAGE,
+      redirected: false,
+    });
+    expect(mocks.lovableSignInWithOAuth).not.toHaveBeenCalled();
   });
 
-  it("starts OAuth with a safe callback URL when Google is enabled", async () => {
+  it("starts managed OAuth with a safe callback URL when Google is enabled", async () => {
     fetchMock.mockResolvedValue(settingsResponse({ google: true }));
-    // A same-document hash URL lets jsdom "navigate" so we can observe the redirect.
-    const consentUrl = `${window.location.href.split("#")[0]}#google-consent`;
-    mocks.signInWithOAuth.mockResolvedValue({
-      data: { provider: "google", url: consentUrl },
-      error: null,
-    });
+    mocks.lovableSignInWithOAuth.mockResolvedValue({ redirected: true, error: null });
     const { signInWithGoogle } = await loadAuth();
 
-    await expect(signInWithGoogle("//evil.example")).resolves.toBeNull();
-    expect(window.location.hash).toBe("#google-consent");
-    expect(mocks.signInWithOAuth).toHaveBeenCalledWith({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=%2Fdashboard`,
-        skipBrowserRedirect: true,
-        queryParams: { prompt: "select_account" },
-      },
+    await expect(signInWithGoogle("//evil.example")).resolves.toEqual({
+      error: null,
+      redirected: true,
+    });
+    expect(mocks.lovableSignInWithOAuth).toHaveBeenCalledWith("google", {
+      redirect_uri: `${window.location.origin}/auth/callback?next=%2Fdashboard`,
+      extraParams: { prompt: "select_account" },
     });
   });
 
   it("still attempts OAuth when the provider check fails, and surfaces its error", async () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
-    mocks.signInWithOAuth.mockResolvedValue({
-      data: { provider: "google", url: null },
+    mocks.lovableSignInWithOAuth.mockResolvedValue({
+      redirected: false,
       error: { message: "Unsupported provider: provider is not enabled" },
     });
     const { signInWithGoogle } = await loadAuth();
 
-    await expect(signInWithGoogle("/dashboard")).resolves.toBe(
-      "Unsupported provider: provider is not enabled",
-    );
-    expect(mocks.signInWithOAuth).toHaveBeenCalledTimes(1);
+    await expect(signInWithGoogle("/dashboard")).resolves.toEqual({
+      error: "Unsupported provider: provider is not enabled",
+      redirected: false,
+    });
+    expect(mocks.lovableSignInWithOAuth).toHaveBeenCalledTimes(1);
   });
 
-  it("reports a missing OAuth URL instead of pretending to succeed", async () => {
+  it("returns success with redirected: false when the helper sets the session itself", async () => {
     fetchMock.mockResolvedValue(settingsResponse({ google: true }));
-    mocks.signInWithOAuth.mockResolvedValue({
-      data: { provider: "google", url: null },
-      error: null,
-    });
+    mocks.lovableSignInWithOAuth.mockResolvedValue({ redirected: false, error: null });
     const { signInWithGoogle } = await loadAuth();
-    await expect(signInWithGoogle()).resolves.toMatch(/couldn't start google sign-in/i);
+    await expect(signInWithGoogle()).resolves.toEqual({ error: null, redirected: false });
   });
 });
 
@@ -161,7 +161,7 @@ describe("AuthForm Google button", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/google sign-in isn't enabled for this project yet/i);
-    expect(mocks.signInWithOAuth).not.toHaveBeenCalled();
+    expect(mocks.lovableSignInWithOAuth).not.toHaveBeenCalled();
     expect(google).toBeEnabled();
   });
 

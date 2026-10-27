@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { Session, User } from "@supabase/supabase-js";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { authCallbackUrl, DEFAULT_NEXT_PATH } from "@/lib/auth-redirect";
 
 export const credentialsSchema = z.object({
@@ -79,31 +80,50 @@ export function getAuthProviderStatus(): Promise<AuthProviderStatus | null> {
   return providerStatusPromise;
 }
 
+export interface GoogleSignInResult {
+  /** Human-readable error, or `null` on success. */
+  error: string | null;
+  /** True when the browser is already on its way to Google (full-page flow). */
+  redirected: boolean;
+}
+
 /**
- * Start Google OAuth. Returns an error message, or `null` once the browser is being sent to
- * Google. Checks the provider is enabled first so nobody lands on a raw JSON error page.
+ * Start managed Google OAuth through the Lovable auth helper, which works both on the
+ * published site and inside the editor preview (where a plain redirect can't run).
+ * Checks the provider is enabled first so nobody lands on a raw JSON error page.
  */
-export async function signInWithGoogle(next: string = DEFAULT_NEXT_PATH): Promise<string | null> {
-  if (typeof window === "undefined") return "Google sign-in is only available in the browser.";
+export async function signInWithGoogle(
+  next: string = DEFAULT_NEXT_PATH,
+): Promise<GoogleSignInResult> {
+  if (typeof window === "undefined") {
+    return { error: "Google sign-in is only available in the browser.", redirected: false };
+  }
   try {
     const status = await getAuthProviderStatus();
-    if (status && !status.google) return GOOGLE_NOT_ENABLED_MESSAGE;
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: authCallbackUrl(window.location.origin, next),
-        skipBrowserRedirect: true,
-        queryParams: { prompt: "select_account" },
-      },
+    if (status && !status.google) return { error: GOOGLE_NOT_ENABLED_MESSAGE, redirected: false };
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: authCallbackUrl(window.location.origin, next),
+      extraParams: { prompt: "select_account" },
     });
-    if (error) return error.message;
-    if (!data?.url) return "Couldn't start Google sign-in. Please try again.";
-    window.location.assign(data.url);
-    return null;
+    if (result.error) {
+      const message =
+        result.error instanceof Error
+          ? result.error.message
+          : ((result.error as { message?: string }).message ?? "");
+      return {
+        error: message || "Couldn't start Google sign-in. Please try again.",
+        redirected: false,
+      };
+    }
+    return { error: null, redirected: Boolean(result.redirected) };
   } catch (e) {
-    return e instanceof Error && e.message
-      ? e.message
-      : "Couldn't start Google sign-in. Please try again.";
+    return {
+      error:
+        e instanceof Error && e.message
+          ? e.message
+          : "Couldn't start Google sign-in. Please try again.",
+      redirected: false,
+    };
   }
 }
 
