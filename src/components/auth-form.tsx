@@ -77,12 +77,19 @@ export function AuthForm({
     setErrors({});
     if (!start("google")) return;
     const target = next ?? window.location.pathname + window.location.search;
-    const err = await signInWithGoogle(target);
-    // On success the browser is already leaving for Google, so keep the busy state.
-    if (err) {
+    const result = await signInWithGoogle(target);
+    if (result.error) {
       stop();
-      setErrors({ form: err });
+      setErrors({ form: result.error });
+      return;
     }
+    if (result.redirected) {
+      // The browser is already leaving for Google, so keep the busy state.
+      return;
+    }
+    // Popup flow (e.g. inside the editor preview): the session is already set.
+    stop();
+    onSuccess?.();
   };
 
   const submit = async (e: FormEvent) => {
